@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import filehandler
 from urllib.parse import quote
 from dotenv import load_dotenv
 from selenium import webdriver
@@ -10,7 +11,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ActionChains
-import filehandler
 
 # ---------- Logging Setup ----------
 logging.basicConfig(
@@ -180,7 +180,7 @@ def close_extra_tabs(driver):
 def process_term(driver, term, wait):
     open_new_tab(driver, BASE_URL)
     if not search_term(driver, term, wait):
-        return "Search failed"
+        return "Could not locate the search box"
     if not validate_properties_page(driver, wait, term):
         logging.info("Properties page not detected — attempting to click first search result.")
         if not click_first_search_result(driver, term):
@@ -188,7 +188,7 @@ def process_term(driver, term, wait):
         time.sleep(2)
         if not validate_properties_page(driver, wait, term):
             logging.error("Still not on properties page after clicking first result.")
-            return "Failed to confirm existance of properties page"
+            return "Properties page not found"
 
     return extract_port_details(driver, wait, term)
 
