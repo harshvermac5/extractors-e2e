@@ -1,107 +1,146 @@
-# 🧪 selenium-e2e
+# 📘 Asset Automation Extractor
 
-This repository contains Python automation scripts designed to streamline **inventory management** in **E2E Networks' internal asset portal** using **Selenium WebDriver**.
+Automates search and extraction of asset information (ports, racks, etc.) from the **E2E Asset Management Portal** using Selenium.
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-Both `fetch-rack-no.py` and `fetch-port-details.py` share the same robust automation architecture with the following features:
+* 🔍 **Automated search** for Asset Tags / IPs from an input file.
+* 📑 **Extractor modules** for different data types:
 
-* 🔍 **Automated asset lookup** using `search_terms.txt` as input (supports IP addresses or hostnames)
-* 🧾 **Data extraction**:
+  * `ports` → extracts *Ports & Links* information.
+  * `racks` → extracts *Rack number* information.
+* 🧭 **Robust navigation**:
 
-  * `fetch-rack-no.py`: Extracts and saves rack numbers to `rack_numbers.txt`
-  * `fetch-port-details.py`: Extracts and saves port details to `port_numbers.txt`
-* 🔄 **Modular design** with well-structured functions for maintainability
-* 🛡️ **Secure credential handling** via `.env` file (no hardcoded credentials)
-* 💾 **Incremental data writing**: Saves output to `output.txt` every 5 records for better fault tolerance
-* ⚙️ **Advanced element interaction** using JavaScript clicks and Selenium Action Chains
-* 🧠 **Optimized memory usage**: Opens a maximum of 5 Chrome tabs concurrently
-* 👻 **Runs in headless mode**: Enables silent, UI-free execution
-* 🖼️ **Error diagnostics**:
+  * Handles multiple search attempts.
+  * Confirms *Properties Page* before extraction.
+  * Clicks elements using **JS click** with **ActionChains fallback**.
+* 🛠 **Tab management** — prevents too many open tabs (`TAB_LIMIT`).
+* 📂 **Debug mode**:
 
-  * Saves screenshots and HTML dumps for failed records
-  * Helps with debugging portal behavior changes or login issues
+  * Saves page source and screenshots on failure in `debug/`.
+  * Logs all actions to `debug/automation.log`.
+* ⏳ **Resilient retries** — up to 3 attempts per term if failures occur.
+* 🖥 **Headless mode** — runs without a visible browser window.
 
 ---
 
 ## 📦 Dependencies
 
-Install the required packages using pip:
+Install required dependencies:
 
 ```bash
 pip install selenium python-dotenv
 ```
 
-Make sure **ChromeDriver** is installed and available in your system's `PATH`.
+This will automatically install:
+
+* **Google Chrome** (latest stable).
+* **ChromeDriver** matching your Chrome version (ensure it’s in your PATH).
 
 ---
 
-## ⚙️ Setup & Usage
+## ⚙️ Configuration
 
-1. **Clone the repository**:
+Create a `.env` file in the project root:
 
-   ```bash
-   git clone https://github.com/harshvermac5/selenium-e2e.git
-   cd selenium-e2e
-   ```
+```ini
+E2E_USERNAME=your-username
+E2E_PASSWORD=your-password
+```
 
-2. **Create a `.env` file** with your E2E portal credentials:
-
-   ```env
-   E2E_USERNAME="your_username"
-   E2E_PASSWORD="your_password"
-   ```
-
-3. **Connect to the E2E VPN** to access the internal portal.
-
-4. **Prepare input**:
-
-   * Add a list of IP addresses or hostnames (one per line) to `search_terms.txt`
-
-5. **Run the desired script**:
-
-   * To fetch rack numbers:
-
-     ```bash
-     python3 fetch-rack-no.py
-     ```
-   * To fetch port details:
-
-     ```bash
-     python3 fetch-port-details.py
-     ```
-
-6. **View the output**:
-
-   ```bash
-   cat rack_numbers.txt
-   cat port_numbers.txt
-   ```
+Credentials are automatically URL-encoded.
 
 ---
 
-## 📁 Output Files
+## 📂 Project Structure
 
-| File                  | Description                                       |
-| --------------------- | ------------------------------------------------- |
-| `rack_numbers.txt`    | Rack numbers extracted by `fetch-rack-no.py`      |
-| `port_numbers.txt`    | Port details extracted by `fetch-port-details.py` |
-| `output.txt`          | Incremental results (every 5 records)             |
-| `failed_screenshots/` | Screenshots of failed cases                       |
-| `failed_html_dumps/`  | HTML dumps for debugging failed records           |
-| `automation.log`      | Logs the progress of script                       |
+```
+.
+├── main.py               # Entry point
+├── webhandler.py         # Browser and navigation helpers
+├── filehandler.py        # File I/O utilities
+├── extractors/
+│   ├── ports.py          # Ports & Links extractor
+│   └── racks.py          # Rack number extractor
+├── search_terms.txt      # Input search keywords
+├── debug/                # Logs, screenshots, HTML dumps
+│   └── automation.log
+└── results_ports.txt     # Example output
+```
 
 ---
 
-## 🧩 Notes
+## 🚀 Usage
 
-* Scripts are intended for **internal use** within E2E Networks.
-* Ensure you're using a **compatible version of Chrome** and **ChromeDriver**.
-* Extend or modify the scripts as needed for other automation within the portal.
+### Run an extractor
 
+```bash
 
-⚠️ **Warning:** : This code is provided "as is", **without any warranty of any kind**, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement.
+# Clone the repository
+git clone https://github.com/harshvermac5/extractors-e2e.git
 
-The author(s) shall **not be held liable for any damages** arising from the use of this tool.
+# Change into the folder
+cd extractors-e2e
+
+# Run the main file with parameter
+python main.py <extractor>
+```
+
+Where `<extractor>` can be:
+
+* `ports` → extract *Ports & Links*.
+* `racks` → extract *Rack number*.
+
+Example:
+
+```bash
+python main.py ports
+```
+
+---
+
+## 📤 Input & Output
+
+### Input file: `search_terms.txt`
+
+* Each line contains one Asset Tag or IP to search.
+
+Example:
+
+```
+NMNE-000
+SPK-X-0000
+SPK-D-0000
+```
+
+### Output files
+
+Each extractor writes results to its own file:
+
+* `results_ports.txt`
+* `results_racks.txt`
+
+---
+
+## 🪲 Debugging
+
+If something fails:
+
+* Check **`debug/automation.log`** for detailed logs.
+* Screenshots and page dumps are saved in `debug/`.
+
+  * Example:
+
+    * `screenshot_click_failure_NMNE-479.png`
+    * `debug_NMNE-479.html`
+
+---
+
+## ⚠️ Notes & Warnings
+
+* ❗ **Fragile DOM locators**: Some XPaths rely on the current structure of the E2E portal. If the UI changes, locators must be updated.
+* ❗ **Headless issues**: Some interactions may fail in headless mode. Run without `--headless=new` for debugging.
+* 📄 **Rate limits**: Excessive requests may slow down or trigger portal protections.
+* 💾 **Output overwrite**: Results file is cleared at the start of each run.
